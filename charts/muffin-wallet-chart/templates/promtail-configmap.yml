@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: default
+data:
+  config.yaml: |
+    server:
+      http_listen_port: 9080
+      grpc_listen_port: 0
+
+    positions:
+      filename: /tmp/positions.yaml
+    
+    clients:
+      - url: http://host.minikube.internal:3100/loki/api/v1/push
+    
+    scrape_configs:
+      - job_name: app-logs
+        pipeline_stages:
+          - regex:
+              expression: ^(?P<timestamp>\S+)\s+(?P<logLevel>INFO|ERROR|WARN|DEBUG)\s+\[(?P<traceId>[a-f0-9]*),(?P<spanId>[a-f0-9]*)\]
+          - labels:
+              traceId:
+              logLevel:
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: muffin-wallet
+              __path__: /logs/*.log
+

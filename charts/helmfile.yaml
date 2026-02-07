@@ -1,0 +1,18 @@
+releases:
+  - name: currency
+    namespace: default
+    chart: ./muffin-currency-chart
+    values:
+      - ./muffin-currency-chart/values.yaml
+
+  - name: wallet
+    namespace: default
+    chart: ./muffin-wallet-chart
+    values:
+      - ./muffin-wallet-chart/values.yaml
+
+  - name: istio
+    namespace: default
+    chart: ./muffin-istio-chart
+    values:
+      - ./muffin-istio-chart/values.yaml

@@ -1,0 +1,437 @@
+# Source: muffin-currency/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: muffin-currency
+  labels:
+    app: muffin-currency
+    app.kubernetes.io/name: muffin-currency
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8083
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: muffin-currency
+---
+# Source: muffin-currency/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: muffin-currency
+  labels:
+    app: muffin-currency
+    app.kubernetes.io/name: muffin-currency
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: muffin-currency
+  template:
+    metadata:
+      labels:
+        app: muffin-currency
+    spec:
+      containers:
+        - name: muffin-currency
+          image: "aadan1lov/muffin-currency:1.0.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /rate?from=PLAIN&to=CHOKOLATE
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /rate?from=PLAIN&to=CHOKOLATE
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+
+  Templating release=wallet, chart=./muffin-wallet-chart
+---
+# Source: muffin-wallet/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wallet-muffin-wallet
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  SPRING_DATASOURCE_PASSWORD: "bXVmZmluLXdhbGxldA=="
+---
+# Source: muffin-wallet/templates/configmap-for-log
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+    }
+
+    http {
+        server {
+            listen 80;
+            location /logs {
+                alias /usr/share/nginx/html;
+                autoindex on;
+            }
+        }
+    }
+---
+# Source: muffin-wallet/templates/configmap.yaml
+# ConfigMap для переменных окружения
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-muffin-wallet-env
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  JDK_JAVA_OPTIONS: -Dspring.config.additional-location=/app/config/application.yaml
+---
+# Source: muffin-wallet/templates/configmap.yaml
+# ConfigMap для конфигурации приложения
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-muffin-wallet
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  application.yaml: |
+    ---
+    server:
+      port: 8081
+
+    spring:
+      datasource:
+        url: jdbc:postgresql://host.minikube.internal:5432/muffin_wallet
+        username: muffin-wallet
+    logging.file.name: /logs/app.log
+    currency:
+      service:
+        url: http://muffin-currency:8083/rate
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus,metrics
+          base-path: /actuator
+      endpoint:
+        health:
+          probes:
+            enabled: true
+          show-details: always
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+        distribution:
+          percentiles-histogram:
+            "[http.server.requests]": true
+        web:
+          server:
+            request:
+              autotime:
+                enabled: true
+      tracing:
+        sampling:
+          probability: 1.0
+---
+# Source: muffin-wallet/templates/service-for-log.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-muffin-wallet-log
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+---
+# Source: muffin-wallet/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-muffin-wallet
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8081
+---
+# Source: muffin-wallet/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-muffin-wallet
+  labels:
+    helm.sh/chart: muffin-wallet-0.1.0
+    app.kubernetes.io/name: muffin-wallet
+    app.kubernetes.io/instance: wallet
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: muffin-wallet
+      app.kubernetes.io/instance: wallet
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: muffin-wallet
+        app.kubernetes.io/instance: wallet
+    spec:
+      serviceAccountName: muffin-wallet-sa
+      volumes:
+        - name: application-config-volume
+          configMap:
+            name: wallet-muffin-wallet
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: log-volume
+          emptyDir: { }
+      containers:
+        - name: nginx-log
+          image: nginx:1.29.3
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx
+            - name: log-volume
+              mountPath: /usr/share/nginx/html
+        - name: muffin-wallet
+          image: "aadan1lov/muffin-wallet:1.1.0"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          volumeMounts:
+            - name: application-config-volume
+              mountPath: /app/config
+            - name: log-volume
+              mountPath: /logs
+          envFrom:
+            - secretRef:
+                name: wallet-muffin-wallet
+            - configMapRef:
+                name: wallet-muffin-wallet-env
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 80
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+  Templating release=istio, chart=./muffin-istio-chart
+---
+# Source: muffin-istio-config/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: muffin-wallet-sa
+  namespace: default
+---
+# Source: muffin-istio-config/templates/auth-policy.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-only-wallet
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: muffin-currency
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/default/sa/muffin-wallet-sa"]
+---
+# Source: muffin-istio-config/templates/destination-rule.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: muffin-currency-cb
+  namespace: default
+spec:
+  host: muffin-currency.default.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 20
+      http:
+        http1MaxPendingRequests: 5
+        maxRequestsPerConnection: 5
+        maxRetries: 3
+    outlierDetection:
+      consecutive5xxErrors: 7
+      interval: 5s
+      baseEjectionTime: 15s
+      maxEjectionPercent: 100
+---
+# Source: muffin-istio-config/templates/gateway.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: wallet-gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - muffin-wallet.com
+        - muffin-wallet-log.com
+---
+# Source: muffin-istio-config/templates/peer-authentication.yaml
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mtls
+  namespace: default
+spec:
+  mtls:
+    mode: STRICT
+---
+# Source: muffin-istio-config/templates/service-entry.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-postgres
+  namespace: default
+spec:
+  hosts:
+    - host.minikube.internal
+  ports:
+    - name: postgres
+      number: 5432
+      protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: DNS
+---
+# Source: muffin-istio-config/templates/tracing.yaml
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+    - providers:
+        - name: jaeger
+---
+# Source: muffin-istio-config/templates/virtualservice-currency.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: muffin-currency-vs
+  namespace: default
+spec:
+  hosts:
+    - muffin-currency
+  http:
+    - route:
+        - destination:
+            host: muffin-currency
+            port:
+              number: 8083
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: connect-failure,refused-stream,unavailable,deadline-exceeded,resource-exhausted,5xx
+      timeout: 10s
+---
+# Source: muffin-istio-config/templates/virtualservice.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: wallet-vs
+  namespace: default
+spec:
+  hosts:
+    - muffin-wallet.com
+    - muffin-wallet-log.com
+  gateways:
+    - wallet-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: muffin-wallet.com
+      route:
+        - destination:
+            host: wallet-muffin-wallet
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: muffin-wallet-log.com
+      route:
+        - destination:
+            host: wallet-muffin-wallet-log
+            port:
+              number: 80

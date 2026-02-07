@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "muffin-wallet.fullname" . }}
+  labels:
+    {{- include "muffin-wallet.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "muffin-wallet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "muffin-wallet.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: muffin-wallet-sa
+      volumes:
+        - name: application-config-volume
+          configMap:
+            name: {{ include "muffin-wallet.fullname" . }}
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: log-volume
+          emptyDir: { }
+        - name: promtail-config
+          configMap:
+            name: promtail-config
+      containers:
+        - name: nginx-log
+          image: nginx:1.29.3
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx
+            - name: log-volume
+              mountPath: /usr/share/nginx/html
+        - name: promtail
+          image: grafana/promtail:latest
+          args:
+            - -config.file=/etc/promtail/config.yaml
+          volumeMounts:
+            - name: log-volume
+              mountPath: /logs
+            - name: promtail-config
+              mountPath: /etc/promtail
+
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: application-config-volume
+              mountPath: /app/config
+            - name: log-volume
+              mountPath: /logs
+          envFrom:
+            - secretRef:
+                name: {{ include "muffin-wallet.fullname" . }}
+            - configMapRef:
+                name: {{ include "muffin-wallet.fullname" . }}-env
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}

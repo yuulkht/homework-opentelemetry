@@ -1,0 +1,63 @@
+# Количество реплик
+replicaCount: 1
+
+# Image конфигурация
+image:
+  repository: yuulkht/muffin-wallet
+  tag: "1.0.4"
+  pullPolicy: Always
+
+# Настройки приложения
+app:
+  name: muffin-wallet
+  port: 8081
+  servicePort: 80
+
+# Общие настройки ресурсов, пока что для возможности изменения названий ресурсов
+common:
+  resources:
+    nameOverride: ""
+    fullnameOverride: ""
+
+# Настройки бд
+database:
+  host: host.minikube.internal
+  port: 5432
+  name: muffin_wallet
+  username: muffin-wallet
+  password: muffin-wallet
+
+# Настройки для подключения к сервису валют
+currency:
+  service:
+    url: "http://muffin-currency:8083/rate"
+
+# Настройки проб
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 90
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 80
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Конфигурация ингресса
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "muffin-wallet.com"
+  hostlog: "muffin-wallet-log.com"
+  path: "/"
+  pathType: Prefix
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"

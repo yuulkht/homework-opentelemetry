@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: wallet-vs
+  namespace: {{ .Values.global.namespace }}
+spec:
+  hosts:
+    {{- toYaml .Values.gateway.hosts | nindent 4 }}
+  gateways:
+    - {{ .Values.gateway.name }}
+  http:
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: {{ .Values.wallet.main.domain }}
+      route:
+        - destination:
+            host: {{ .Values.wallet.main.host }}
+            port:
+              number: {{ .Values.wallet.main.port }}
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: {{ .Values.wallet.log.domain }}
+      route:
+        - destination:
+            host: {{ .Values.wallet.log.host }}
+            port:
+              number: {{ .Values.wallet.log.port }}

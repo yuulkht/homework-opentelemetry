@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: muffin-currency-vs
+  namespace: {{ .Values.global.namespace }}
+spec:
+  hosts:
+    - {{ .Values.currency.service }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.currency.service }}
+            port:
+              number: {{ .Values.currency.port }}
+      retries:
+        attempts: {{ .Values.currency.retries.attempts }}
+        perTryTimeout: {{ .Values.currency.retries.perTryTimeout }}
+        retryOn: {{ .Values.currency.retries.retryOn }}
+      timeout: {{ .Values.currency.timeout }}

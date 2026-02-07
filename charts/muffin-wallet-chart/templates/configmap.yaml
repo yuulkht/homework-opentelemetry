@@ -1,0 +1,66 @@
+# ConfigMap для переменных окружения
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "muffin-wallet.fullname" . }}-env
+  labels:
+    {{- include "muffin-wallet.labels" . | nindent 4 }}
+data:
+  JDK_JAVA_OPTIONS: -Dspring.config.additional-location=/app/config/application.yaml
+
+---
+# ConfigMap для конфигурации приложения
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "muffin-wallet.fullname" . }}
+  labels:
+    {{- include "muffin-wallet.labels" . | nindent 4 }}
+data:
+  application.yaml: |
+    ---
+    server:
+      port: {{ .Values.app.port }}
+
+    spring:
+      datasource:
+        url: jdbc:postgresql://{{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}
+        username: {{ .Values.database.username }}
+    logging:
+      pattern:
+        level: "%5p [%X{traceId:-},%X{spanId:-}]"
+      file:
+        name: "/logs/app.log"
+    currency:
+      service:
+        url: {{ .Values.currency.service.url }}
+    management:
+      tracing:
+        sampling:
+          probability: 1.0 # Sample 100% of traces for demo
+      zipkin:
+        tracing:
+          endpoint: "http://host.minikube.internal:9411/api/v2/spans"
+      endpoints:
+        web:
+          exposure:
+            include: '*'
+        base-path: /actuator
+      endpoint:
+        health:
+          probes:
+            enabled: true
+          show-details: always
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+        distribution:
+          percentiles-histogram:
+            "[http.server.requests]": true
+        web:
+          server:
+            request:
+              autotime:
+                enabled: true
+    management.metrics.distribution.percentiles-histogram.http.server.requests: true

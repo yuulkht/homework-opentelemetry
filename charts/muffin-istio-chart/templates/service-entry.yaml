@@ -1,0 +1,12 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ .Values.serviceEntry.name }}
+  namespace: {{ .Values.global.namespace }}
+spec:
+  hosts:
+    - {{ .Values.serviceEntry.host }}
+  ports:
+    {{- toYaml .Values.serviceEntry.ports | nindent 4 }}
+  location: {{ .Values.serviceEntry.location }}
+  resolution: {{ .Values.serviceEntry.resolution }}

@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: 'muffin-wallet'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['muffin-wallet.com']
+        labels:
+          application: 'muffin-wallet'
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: [ 'localhost:9187' ]
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

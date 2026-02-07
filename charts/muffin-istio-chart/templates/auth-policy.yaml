@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.authorizationPolicy.name }}
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.authorizationPolicy.selector.matchLabels | nindent 6 }}
+  action: {{ .Values.authorizationPolicy.action }}
+  rules:
+    - from:
+        - source:
+            principals: ["{{ .Values.global.clusterDomain }}/ns/{{ .Values.global.namespace }}/sa/{{ .Values.serviceAccount.name }}"]

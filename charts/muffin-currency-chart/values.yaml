@@ -1,0 +1,32 @@
+# Количество реплик
+replicaCount: 2
+
+# Image конфигурация
+image:
+  repository: yuulkht/muffin-currency
+  tag: "1.0.3"
+  pullPolicy: IfNotPresent
+
+# Настройки сервиса
+service:
+  type: ClusterIP
+  port: 8083
+  targetPort: 8080
+
+# Настройки приложения
+app:
+  name: muffin-currency
+  labels:
+    app: muffin-currency
+
+# Настройки проб
+probes:
+  liveness:
+    path: /rate?from=PLAIN&to=CHOKOLATE
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readiness:
+    path: /rate?from=PLAIN&to=CHOKOLATE
+    initialDelaySeconds: 2
+    periodSeconds: 5
+

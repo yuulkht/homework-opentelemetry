@@ -1,0 +1,5 @@
+apiVersion: v2
+name: muffin-istio-config
+description: Istio configuration for Muffin applications
+version: 0.1.0
+appVersion: "1.1.0"

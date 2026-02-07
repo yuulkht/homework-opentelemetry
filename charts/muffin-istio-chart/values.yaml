@@ -1,0 +1,92 @@
+# Global values
+global:
+  namespace: default
+  clusterDomain: cluster.local
+
+# Service Account
+serviceAccount:
+  name: muffin-wallet-sa
+  create: true
+
+# Gateway configuration
+gateway:
+  name: wallet-gateway
+  selector:
+    istio: ingressgateway
+  hosts:
+    - muffin-wallet.com
+    - muffin-wallet-log.com
+  port:
+    number: 80
+    name: http
+    protocol: HTTP
+
+# External Service Entry
+serviceEntry:
+  name: external-postgres
+  host: host.minikube.internal
+  ports:
+    - number: 5432
+      name: postgres
+      protocol: TCP
+    - name: zipkin
+      number: 9411
+      protocol: HTTP
+    - name: loki
+      number: 3100
+      protocol: HTTP
+    - name: grafana
+      number: 3000
+      protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+# mTLS configuration
+peerAuthentication:
+  name: mtls
+  mode: STRICT
+
+# Currency service configuration
+currency:
+  service: muffin-currency
+  port: 8083
+  maxConnections: 20
+  maxPendingRequests: 5
+  maxRequestsPerConnection: 5
+  maxRetries: 3
+  consecutive5xxErrors: 7
+  outlierDetection:
+    interval: 5s
+    baseEjectionTime: 15s
+    maxEjectionPercent: 100
+  retries:
+    attempts: 3
+    perTryTimeout: 2s
+    retryOn: connect-failure,refused-stream,unavailable,deadline-exceeded,resource-exhausted,5xx
+  timeout: 10s
+
+# Wallet services
+wallet:
+  main:
+    host: wallet-muffin-wallet
+    port: 80
+    domain: muffin-wallet.com
+  log:
+    host: wallet-muffin-wallet-log
+    port: 80
+    domain: muffin-wallet-log.com
+
+# Authorization Policy
+authorizationPolicy:
+  name: allow-only-wallet
+  selector:
+    matchLabels:
+      app: muffin-currency
+  action: ALLOW
+  sourcePrincipal: "cluster.local/ns/default/sa/muffin-wallet-sa"
+
+telemetry:
+  tracing:
+    name: mesh-default
+    namespace: istio-system
+    provider: jaeger

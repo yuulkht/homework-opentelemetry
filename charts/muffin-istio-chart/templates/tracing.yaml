@@ -1,0 +1,9 @@
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: {{ .Values.telemetry.tracing.name }}
+  namespace: {{ .Values.telemetry.tracing.namespace }}
+spec:
+  tracing:
+    - providers:
+        - name: {{ .Values.telemetry.tracing.provider }}

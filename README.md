@@ -1,4 +1,4 @@
-# ДЗ по логам и трейсам. Промышленное развертывание промышленных приложений. Дедлайн 03.02.26
+# ДЗ по Opentelemetry. Промышленное развертывание промышленных приложений. Дедлайн 18.02.26
 
 ## Выполнила Кухтина Юлия Егоровна, БПИ224
 
@@ -10,6 +10,16 @@
 minikube start --cpus=4 --memory=6g  --driver=docker
 docker compose up -d
 ```
+
+# 2 Устанавливаем cert-manager и Opentelemetry operator
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml # тут нужно немного подождать, потому что поды должны успеть развернуться
+kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+```
+
+PS C:\Users\julia\Desktop\Yulia\HSE\4course\promrazpril\homework-opentelemetry> cd .\opentelemetry\
+PS C:\Users\julia\Desktop\Yulia\HSE\4course\promrazpril\homework-opentelemetry\opentelemetry> kubectl apply -f operator.yaml
+
 
 ### 2. Запускаем приложение с истио
 Переходим в папку `charts` и устанавливаем и разворачиваем приложение с истио с помощью хельмфайла

@@ -14,7 +14,7 @@ spec:
       labels:
         {{- include "muffin-wallet.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: muffin-wallet-sa
+{{/*      serviceAccountName: muffin-wallet-sa*/}}
       volumes:
         - name: application-config-volume
           configMap:
@@ -24,9 +24,16 @@ spec:
             name: nginx-config
         - name: log-volume
           emptyDir: { }
-        - name: promtail-config
-          configMap:
-            name: promtail-config
+        - name: agent-volume
+          emptyDir: { }
+      initContainers:
+        - name: install-java-agent
+          image: "yuulkht/java-agent:1.0.0"
+          imagePullPolicy: Always
+          command: [ 'sh', '-c', 'cp -r /opt/java-agent/. /shared-agents/' ]
+          volumeMounts:
+            - name: agent-volume
+              mountPath: /shared-agents
       containers:
         - name: nginx-log
           image: nginx:1.29.3
@@ -35,15 +42,6 @@ spec:
               mountPath: /etc/nginx
             - name: log-volume
               mountPath: /usr/share/nginx/html
-        - name: promtail
-          image: grafana/promtail:latest
-          args:
-            - -config.file=/etc/promtail/config.yaml
-          volumeMounts:
-            - name: log-volume
-              mountPath: /logs
-            - name: promtail-config
-              mountPath: /etc/promtail
 
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -57,6 +55,17 @@ spec:
               mountPath: /app/config
             - name: log-volume
               mountPath: /logs
+            - name: agent-volume
+              mountPath: /shared-agents
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/shared-agents/opentelemetry-javaagent.jar"
+            - name: OTEL_INSTRUMENTATION_MICROMETER_ENABLED
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector-collector.default.svc.cluster.local:4318"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=muffin-wallet"
           envFrom:
             - secretRef:
                 name: {{ include "muffin-wallet.fullname" . }}

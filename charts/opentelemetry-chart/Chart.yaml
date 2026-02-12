@@ -1,0 +1,5 @@
+apiVersion: v2
+name: opentelemetry-config
+description: Opentelemetry for monitoring
+version: 0.1.0
+appVersion: "1.1.0"

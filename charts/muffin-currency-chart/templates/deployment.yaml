@@ -20,8 +20,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: ZIPKIN_ENDPOINT
-              value: http://host.minikube.internal:9411/api/v2/spans
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector-collector.default.svc.cluster.local:4317
           ports:
             - name: http
               containerPort: 8080

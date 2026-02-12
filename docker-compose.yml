@@ -22,20 +22,30 @@ services:
     depends_on:
       - postgres
 
+  prometheus:
+    image: prom/prometheus:latest
+    network_mode: host
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data_2:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.min-block-duration=120s'
+      - '--storage.tsdb.max-block-duration=120s'
+    restart: unless-stopped
+
   loki:
     image: grafana/loki:latest
     container_name: loki
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
 
-#  promtail:
-#    image: grafana/promtail:latest
-#    container_name: promtail
-#    volumes:
-#      - ./muffin-wallet-server/logs:/var/log/app:ro
-#      - ./promtail-config.yaml:/etc/promtail/config.yaml
-#    command: -config.file=/etc/promtail/config.yaml
+
   grafana:
     ports:
       - "3000:3000"
@@ -47,6 +57,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     restart: unless-stopped
+
   zipkin:
     image: openzipkin/zipkin:latest
     container_name: zipkin
@@ -57,3 +68,4 @@ services:
 volumes:
   postgres_data:
   grafana-data:
+  prometheus_data_2:

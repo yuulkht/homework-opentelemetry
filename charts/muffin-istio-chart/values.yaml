@@ -44,7 +44,7 @@ serviceEntry:
 # mTLS configuration
 peerAuthentication:
   name: mtls
-  mode: STRICT
+  mode: DISABLE
 
 # Currency service configuration
 currency:

@@ -10,9 +10,15 @@ releases:
     chart: ./muffin-wallet-chart
     values:
       - ./muffin-wallet-chart/values.yaml
+#
+#  - name: istio
+#    namespace: default
+#    chart: ./muffin-istio-chart
+#    values:
+#      - ./muffin-istio-chart/values.yaml
 
-  - name: istio
+  - name: opentelemetry
     namespace: default
-    chart: ./muffin-istio-chart
+    chart: ./opentelemetry-chart
     values:
-      - ./muffin-istio-chart/values.yaml
+      - ./opentelemetry-chart/values.yaml

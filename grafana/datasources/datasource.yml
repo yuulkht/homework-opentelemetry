@@ -4,6 +4,13 @@ datasources:
     type: loki
     access: proxy
     url: http://host.docker.internal:3100
-    isDefault: true
+    isDefault: false
     editable: true
     uid: ffbxenykfad4wf
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://host.docker.internal:9090
+    isDefault: true
+    editable: true
+    uid: cfb2dsbssg000b

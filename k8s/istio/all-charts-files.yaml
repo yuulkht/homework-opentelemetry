@@ -72,7 +72,7 @@ type: Opaque
 data:
   SPRING_DATASOURCE_PASSWORD: "bXVmZmluLXdhbGxldA=="
 ---
-# Source: muffin-wallet/templates/configmap-for-log
+# Source: muffin-wallet/templates/configmap-for-log.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:

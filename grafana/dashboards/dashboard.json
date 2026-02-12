@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 0,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -54,14 +54,14 @@
             "uid": "ffbxenykfad4wf"
           },
           "direction": "backward",
-          "editorMode": "code",
-          "expr": "{logLevel=\"$logLevel\"}",
+          "editorMode": "builder",
+          "expr": "{service_name=\"muffin-wallet\"} | detected_level = `$detected_level`",
           "legendFormat": "",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Custom logLevel",
+      "title": "Custom log_level",
       "type": "logs"
     },
     {
@@ -94,8 +94,8 @@
       "targets": [
         {
           "direction": "backward",
-          "editorMode": "code",
-          "expr": "{job=\"muffin-wallet\"}",
+          "editorMode": "builder",
+          "expr": "{service_name=\"muffin-wallet\"} |= ``",
           "queryType": "range",
           "refId": "A"
         }
@@ -137,7 +137,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{traceId=\"$traceId\"}",
+          "expr": "{service_name=\"muffin-wallet\"} | trace_id = `$trace_id`",
           "legendFormat": "",
           "queryType": "range",
           "refId": "A"
@@ -179,8 +179,8 @@
             "uid": "ffbxenykfad4wf"
           },
           "direction": "backward",
-          "editorMode": "code",
-          "expr": "{logLevel=\"$logLevel\", traceId=\"$traceId\"}",
+          "editorMode": "builder",
+          "expr": "{service_name=\"muffin-wallet\"} | trace_id = `$trace_id` | detected_level = `$detected_level`",
           "legendFormat": "",
           "queryType": "range",
           "refId": "A"
@@ -202,8 +202,8 @@
           "value": "INFO"
         },
         "includeAll": false,
-        "label": "logLevel",
-        "name": "logLevel",
+        "label": "detected_level",
+        "name": "detected_level",
         "options": [
           {
             "selected": false,
@@ -231,20 +231,20 @@
       },
       {
         "current": {
-          "text": "697f64060dc1a819384b739d3081ef43",
-          "value": "697f64060dc1a819384b739d3081ef43"
+          "text": "8548d5080df7728bedc52ef113e73855",
+          "value": "8548d5080df7728bedc52ef113e73855"
         },
         "description": "",
-        "label": "traceId",
-        "name": "traceId",
+        "label": "trace_id",
+        "name": "trace_id",
         "options": [
           {
             "selected": true,
-            "text": "697f64060dc1a819384b739d3081ef43",
-            "value": "697f64060dc1a819384b739d3081ef43"
+            "text": "8548d5080df7728bedc52ef113e73855",
+            "value": "8548d5080df7728bedc52ef113e73855"
           }
         ],
-        "query": "697f64060dc1a819384b739d3081ef43",
+        "query": "8548d5080df7728bedc52ef113e73855",
         "type": "textbox"
       }
     ]
@@ -257,5 +257,5 @@
   "timezone": "browser",
   "title": "Logs of muffin-wallet",
   "uid": "adwvzpv",
-  "version": 11
+  "version": 1
 }

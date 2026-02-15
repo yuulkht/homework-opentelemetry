@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-collector-collector.default.svc.cluster.local:4317
+              value: otel-collector-collector.default.svc.cluster.local:4317
           ports:
             - name: http
               containerPort: 8080

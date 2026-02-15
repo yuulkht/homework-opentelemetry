@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -374,12 +374,12 @@
         "x": 12,
         "y": 9
       },
-      "id": 4,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
+          "displayMode": "list",
+          "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
@@ -392,13 +392,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(\r\n  0.99,\r\n  sum by (le, uri, method) (\r\n    rate(http_server_requests_seconds_bucket{uri=~\"/v1/.*\"}[5m])\r\n  )\r\n)\r\n",
-          "legendFormat": "{{method}} {{uri}}",
+          "expr": "rate(http_client_requests_seconds_count{uri=~\"/.*\"}[5m])",
+          "legendFormat": "{{method}} {{uri}} {{status}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "99-й персентиль времени ответа HTTP (обработка запросов).",
+      "title": "Среднее время запросов к muffin-currency",
       "type": "timeseries"
     },
     {
@@ -515,7 +515,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "App dashboard",
+  "title": "muffin-wallet metrics dashboard",
   "uid": "cfb2dsbssg000babc",
-  "version": 13
+  "version": 4
 }

@@ -14,3 +14,10 @@ datasources:
     isDefault: true
     editable: true
     uid: cfb2dsbssg000b
+  - name: Zipkin
+    type: zipkin
+    access: proxy
+    url: http://host.docker.internal:9411
+    isDefault: false
+    editable: true
+    uid: zipkin-local
